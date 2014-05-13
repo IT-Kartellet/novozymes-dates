@@ -1,0 +1,41 @@
+.block_course_dates .footer {margin-top: 5px;}
+.block_course_dates .content li { margin-bottom: .3em;}
+div.meta_year > div{
+	display: none;
+}
+
+.meta_course_block:hover {
+	background-color:#eee;
+}
+
+.meta_course_unenrol {
+	margin-left: 10px;
+	background-color: #C4D940;
+	color: black;
+	height:auto;
+	width: auto;
+	padding:3px;
+}
+/*
+.meta_course_date {
+	float:right;
+
+}*/
+
+.meta_info {
+	float: right;
+	display: inline;
+}
+
+.block.list_block .unlist > li > .column {
+	display: block !important;
+}
+
+.meta_year h3:hover {
+	text-decoration: underline;
+	color: #aaa;
+}
+
+.meta_course_block{
+	padding-bottom: 5px;
+}
