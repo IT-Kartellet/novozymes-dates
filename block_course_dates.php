@@ -14,7 +14,7 @@ class block_course_dates extends block_list {
 
     function get_content() {
         global $CFG, $USER, $DB, $OUTPUT, $PAGE;
-        $PAGE->requires->js("/lib/jquery/jquery-1.9.1.min.js");
+        $PAGE->requires->jquery();
         $PAGE->requires->js("/blocks/course_dates/core.js");
 
 
@@ -32,7 +32,7 @@ class block_course_dates extends block_list {
         $hasGrow = false;
 
         // Add old GROW courses
-        if ($growCourses = $DB->get_records("grow_legacy", array("username" => strtoupper($USER->username)))) {
+        if (@$growCourses = $DB->get_records("grow_legacy", array("username" => strtoupper($USER->username)))) {
 
             $front_end .= "<div class='meta_year'><h3>Old courses</h3>";
 
