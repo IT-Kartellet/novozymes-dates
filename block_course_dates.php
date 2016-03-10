@@ -41,6 +41,8 @@ class block_course_dates extends block_list {
                 if ($date) {   
                     $course->date = $date->startdate;
 					$course->metaid = $date->metaid;
+                } else {
+                    $course->date = $course->startdate;
                 }
             });
             $years = array();
@@ -63,15 +65,18 @@ class block_course_dates extends block_list {
                 foreach ($year as $course) {
                     $coursecontext = context_course::instance($course->id);
                     $linkcss = $course->visible ? "" : " class=\"dimmed\" ";
-                    $course_enrol_id = $DB->get_records("enrol", array("enrol"=>"manual", "courseid"=>$course->id));
-                    $course_enrol_id = reset($course_enrol_id);
 
                     if (isset($course->date)) {
+                        if (isset($course->metaid)) {
+                            $metadetails = "<span class='meta_course_unenrol'><a href='". $CFG->wwwroot . "/blocks/metacourse/view_metacourse.php?id=".$course->metaid."'>Details</a></span>";
+                        } else {
+                            $metadetails = '';
+                        }
                          $front_end .="
                          <div class='meta_course_block'><a $linkcss title=\""
                            . format_string($course->shortname, true, array('context' => $coursecontext))."\" ".
                            "href=\"$CFG->wwwroot/course/view.php?id=$course->id\">"
-                           .$icon. format_string($course->fullname, true, array('context' => context_course::instance($course->id))) . "</a><div class='meta_info'><span class='meta_course_date'> " . get_string("date"). ":  ".date("Y-m-d", $course->date)."</span><span class='meta_course_unenrol'><a href='". $CFG->wwwroot . "/blocks/metacourse/view_metacourse.php?id=".$course->metaid."'>Details</a></span></div></div>";
+                           .$icon. format_string($course->fullname, true, array('context' => context_course::instance($course->id))) . "</a><div class='meta_info'><span class='meta_course_date'> " . get_string("date"). ":  ".date("Y-m-d", $course->date)."</span>$metadetails</div></div>";
                     } else {
                          $front_end .="<div class='meta_course_block'><a $linkcss title=\""
                            . format_string($course->shortname, true, array('context' => $coursecontext))."\" ".
