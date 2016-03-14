@@ -48,7 +48,7 @@ class block_course_dates extends block_list {
                 }
 
                 if ($course->elearning) {
-                    $key = 'Elearning courses';
+                    $key = 'E-learning courses';
                 } else {
                     $key = date("Y",$course->date);
                 }
