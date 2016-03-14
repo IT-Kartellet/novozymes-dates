@@ -33,58 +33,64 @@ class block_course_dates extends block_list {
 
         // Get users courses
         if ($courses = enrol_get_my_courses(NULL, 'visible DESC, fullname ASC')) {
-
-            // Add current courses
-            array_walk($courses, function ($course) use ($DB){
-                $date = $DB->get_records_sql("SELECT * FROM {meta_datecourse} where courseid = :cid", array("cid"=>$course->id));
-                $date = reset($date);
-                if ($date) {   
-                    $course->date = $date->startdate;
-					$course->metaid = $date->metaid;
-                } else {
-                    $course->date = $course->startdate;
-                }
-            });
             $years = array();
 
-            foreach ($courses as $c) {
-                @$date = date("Y",$c->date);
-                $years[$date][] = $c;
+            foreach ($courses as $course) {
+                $datecourse = $DB->get_record('meta_datecourse', array("courseid"=>$course->id));
+
+                if ($datecourse) {
+                    $course->date = $datecourse->startdate;
+                    $course->metaid = $datecourse->metaid;
+                    $course->elearning = $datecourse->elearning;
+                } else {
+                    $course->date = $course->startdate;
+                    $course->elearning = false;
+                }
+
+                if ($course->elearning) {
+                    $key = 'Elearning courses';
+                } else {
+                    $key = date("Y",$course->date);
+                }
+
+                $years[$key][] = $course;
             }
             ksort($years);
 
-            while (count($years) > 0) {
-
-                $year = reset($years); // also returns element
-                $date_year = key($years);
-                unset($years[key($years)]);
+            foreach ($years as $date_year => $courses) {
                 if ($date_year == 1970) {
                     $date_year = "Date not specified";
                 }
-                $front_end .= "<div class='meta_year'><h3>" . $date_year . "</h3>";
-                foreach ($year as $course) {
+                $front_end .= html_writer::start_div('meta_year') . html_writer::tag('h3', $date_year);
+                foreach ($courses as $course) {
                     $coursecontext = context_course::instance($course->id);
-                    $linkcss = $course->visible ? "" : " class=\"dimmed\" ";
+
+                    $front_end .= html_writer::start_div('meta_course_block') . html_writer::link(
+                        new moodle_url('course/view.php', array('id' => $course->id)),
+                        $icon . format_string($course->fullname, true, array('context' => $coursecontext)),
+                        array(
+                            'class' => $course->visible ? "" : "dimmed",
+                            'title' => format_string($course->shortname, true, array('context' => $coursecontext))
+                        )
+                    );
 
                     if (isset($course->date)) {
+                        $metadetails = '';
                         if (isset($course->metaid)) {
-                            $metadetails = "<span class='meta_course_unenrol'><a href='". $CFG->wwwroot . "/blocks/metacourse/view_metacourse.php?id=".$course->metaid."'>Details</a></span>";
-                        } else {
-                            $metadetails = '';
+                            $metadetails = html_writer::span(html_writer::link(new moodle_url('blocks/metacourse/view_metacourse.php', array('id' => $course->metaid)), 'Details'), 'meta_course_unenrol');
                         }
-                         $front_end .="
-                         <div class='meta_course_block'><a $linkcss title=\""
-                           . format_string($course->shortname, true, array('context' => $coursecontext))."\" ".
-                           "href=\"$CFG->wwwroot/course/view.php?id=$course->id\">"
-                           .$icon. format_string($course->fullname, true, array('context' => context_course::instance($course->id))) . "</a><div class='meta_info'><span class='meta_course_date'> " . get_string("date"). ":  ".date("Y-m-d", $course->date)."</span>$metadetails</div></div>";
-                    } else {
-                         $front_end .="<div class='meta_course_block'><a $linkcss title=\""
-                           . format_string($course->shortname, true, array('context' => $coursecontext))."\" ".
-                           "href=\"$CFG->wwwroot/course/view.php?id=$course->id\">"
-                           .$icon. format_string($course->fullname , true, array('context' => context_course::instance($course->id))) . "</a></div>";
+
+                        $date_part = '';
+                        if (!$course->elearning) {
+                            $date_part = html_writer::span(get_string("date") . ": " . date("Y-m-d", $course->date), 'meta_course_date');
+                        }
+
+                        $front_end .= html_writer::div($date_part . ' ' . $metadetails, 'meta_info');
                     }
+
+                    $front_end .= html_writer::end_div();
                 }
-                $front_end .= "</div>";
+                $front_end .= html_writer::end_div();
 
             }
         
